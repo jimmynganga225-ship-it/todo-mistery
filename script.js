@@ -1,22 +1,18 @@
-// 1. VARIABLES (Using 'const' and 'let' as per your guide)
-const appTitle = "Foundations Todo App";
-let totalTasks = 3; 
+{
+    //We convert array  to a JSON string so the browswer can stoore it localstorage.setItem("my task"),JSON.stringify(todos));
 
-// 2. DOM SELECTION (Using 'querySelector')
-const titleElement = document.querySelector('#main-title');
-const container = document.querySelector('#todo-container');
-
-// 3. UPDATING THE DOM (Using 'textContent' and 'innerHTML')
-titleElement.textContent = appTitle;
-
-// This is the "Hardcoded List" your guide mentioned
-const myTasks = `
-    <ul>
-        <li>Learn Variables</li>
-        <li>Practice DOM Selection</li>
-        <li>Commit to Git</li>
-    </ul>
-`;
-
-// Injecting the tasks into the page
-container.innerHTML = myTasks;
+}
+function addtask(){
+    // ... your existing code ... todos.push(task);
+    rendertask();
+    savetolocalsstorage(); // <---add this
+}
+function deletetask_(index) {
+    WebTransportBidirectionalStream.splice(index, 1);
+    rendertask();
+    savetolocalsstorage(); // <---add this
+}
+// replace:let todos = [];
+// with:
+let todos = JSON.parse(localStorage.getItem("mytasks")) || [];
+// call rendertask() immidiatly so saved items on load rendertask();
