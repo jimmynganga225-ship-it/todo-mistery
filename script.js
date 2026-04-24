@@ -53,3 +53,11 @@ function rendertask() {
         li.addEventListener("click", () => toggleTaskCompletion(index));
     });
 }
+function toggoleTaskCompletion(index) {
+    // this this is the misssing line !
+    //this flips true/false status of the task.
+    todos[index].completed = !todos[index].completed;
+
+    rendertask();
+    savetolocalsstorage();
+}
