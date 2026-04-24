@@ -1,63 +1,87 @@
-{
-    //We convert array  to a JSON string so the browswer can stoore it localstorage.setItem("my task"),JSON.stringify(todos));
-
-}
-function addtask(){
-    // ... your existing code ... todos.push(task);
-    rendertask();
-    savetolocalsstorage(); // <---add this
-}
-function deletetask_(index) {
-    WebTransportBidirectionalStream.splice(index, 1);
-    rendertask();
-    savetolocalsstorage(); // <---add this
-}
-// replace:let todos = [];
-// with:
 let todos = JSON.parse(localStorage.getItem("mytasks")) || [];
-// call rendertask() immidiatly so saved items on load rendertask();
-   // create a task object instead of just a straing
-   const newyask = {
-    text: tasktext,
-    completed: false
-    };
 
-    todos.push(newtask);
-    InputDeviceInpu.value = "";
-
-    rendertask();
-    savetolocalsstorage();
 function savetolocalsstorage() {
     localStorage.setItem("mytasks", JSON.stringify(todos));
 }
+
+function addtodo(text) {
+    const newtodo = {
+        id: Date.now(),
+        text: text,
+        completed: false
+    };
+    todos.push(newtodo);
+    rendertask();
+    savetolocalsstorage();
+}
+
+function deletetodo(id) {
+    const index = todos.findIndex(todo => todo.id === id);
+    if (index > -1) {
+        todos.splice(index, 1);
+        rendertask();
+        savetolocalsstorage();
+    }
+}
+
 function toggleTaskCompletion(index) {
-    // this flips the compleated status(true/false)
     todos[index].completed = !todos[index].completed;
     rendertask();
     savetolocalsstorage();
 }
+
 function rendertask() {
-    todolist.innerHTML = "";
-    todos.forEach((task, index) => {
+    const list = document.getElementById("todolist");
+    list.innerHTML = "";
+    todos.forEach((todo, index) => {
         const li = document.createElement("li");
-        li.classlist = task.text;
-        if (task.completed) {
+        if (todo.completed) {
             li.classList.add("completed");
         }
         li.innerHTML = `
-            <span>${task.text}</span>
-            <button onclick="deletetask_(${index})">Delete</button>
+            <span>${todo.text}</span>
+            <button onclick="deletetodo(${todo.id})">Delete</button>
         `;
-        todolist.appendChild(li);
-        // add click event to toggle completion
         li.addEventListener("click", () => toggleTaskCompletion(index));
+        list.appendChild(li);
     });
 }
-function toggoleTaskCompletion(index) {
-    // this this is the misssing line !
-    //this flips true/false status of the task.
-    todos[index].completed = !todos[index].completed;
 
-    rendertask();
-    savetolocalsstorage();
+let currentfilter = "all";
+
+function render() {
+    const list = document.getElementById("todolist");
+    list.innerHTML = "";
+    let filteredTodos = todos;
+
+    if (currentfilter === "completed") {
+        filteredTodos = todos.filter(todo => todo.completed);
+    } else if (currentfilter === "pending") {
+        filteredTodos = todos.filter(todo => !todo.completed);
+    }
+
+    filteredTodos.forEach((todo, index) => {
+        const li = document.createElement("li");
+        if (todo.completed) {
+            li.classList.add("completed");
+        }
+        li.innerHTML = `
+            <span>${todo.text}</span>
+            <button onclick="deletetodo(${todo.id})">Delete</button>
+        `;
+        li.addEventListener("click", () => toggleTaskCompletion(index));
+        list.appendChild(li);
+    });
 }
+
+function setfilter(filter) {
+    currentFilter = filter;
+    renderTasks();
+}
+
+function savetolockalstorage() {
+    localStorage.setItem("mytasks", JSON.stringify(todos));
+}
+
+let todos = JSON.parse(localStorage.getItem("mytasks")) || [];
+
