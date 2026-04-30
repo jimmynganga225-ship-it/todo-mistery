@@ -1,4 +1,11 @@
 let todos = JSON.parse(localStorage.getItem("mytasks")) || [];
+let currentfilter = "all";
+let searchQuery = "";
+
+const addBnt = document.getElementById("addBnt");
+const input = document.getElementById("input");
+const searchinput = document.getElementById("searchinput");
+const filterBtns = document.querySelectorAll("[data-filter]");
 
 function savetolocalsstorage() {
     localStorage.setItem("mytasks", JSON.stringify(todos));
@@ -11,7 +18,7 @@ function addtodo(text) {
         completed: false
     };
     todos.push(newtodo);
-    rendertask();
+    render();
     savetolocalsstorage();
 }
 
@@ -19,69 +26,90 @@ function deletetodo(id) {
     const index = todos.findIndex(todo => todo.id === id);
     if (index > -1) {
         todos.splice(index, 1);
-        rendertask();
+        render();
         savetolocalsstorage();
     }
 }
 
-function toggleTaskCompletion(index) {
-    todos[index].completed = !todos[index].completed;
-    rendertask();
-    savetolocalsstorage();
+function toggleTaskCompletion(id) {
+    const todo = todos.find(todo => todo.id === id);
+    if (todo) {
+        todo.completed = !todo.completed;
+        render();
+        savetolocalsstorage();
+    }
 }
 
-function rendertask() {
-    const list = document.getElementById("todolist");
-    list.innerHTML = "";
-    todos.forEach((todo, index) => {
-        const li = document.createElement("li");
-        if (todo.completed) {
-            li.classList.add("completed");
-        }
-        li.innerHTML = `
-            <span>${todo.text}</span>
-            <button onclick="deletetodo(${todo.id})">Delete</button>
-        `;
-        li.addEventListener("click", () => toggleTaskCompletion(index));
-        list.appendChild(li);
-    });
+function getFilteredTodos() {
+    return todos
+        .filter(todo => {
+            if (currentfilter === "completed") {
+                return todo.completed;
+            }
+            if (currentfilter === "pending") {
+                return !todo.completed;
+            }
+            return true;
+        })
+        .filter(todo => {
+            if (!searchQuery) {
+                return true;
+            }
+            return todo.text.toLowerCase().includes(searchQuery);
+        });
 }
-
-let currentfilter = "all";
 
 function render() {
     const list = document.getElementById("todolist");
-    list.innerHTML = "";
-    let filteredTodos = todos;
-
-    if (currentfilter === "completed") {
-        filteredTodos = todos.filter(todo => todo.completed);
-    } else if (currentfilter === "pending") {
-        filteredTodos = todos.filter(todo => !todo.completed);
+    if (!list) {
+        return;
     }
+    list.innerHTML = "";
+    const filteredTodos = getFilteredTodos();
 
-    filteredTodos.forEach((todo, index) => {
+    filteredTodos.forEach(todo => {
         const li = document.createElement("li");
         if (todo.completed) {
             li.classList.add("completed");
         }
         li.innerHTML = `
             <span>${todo.text}</span>
-            <button onclick="deletetodo(${todo.id})">Delete</button>
+            <button class="delete-button" type="button">Delete</button>
         `;
-        li.addEventListener("click", () => toggleTaskCompletion(index));
+
+        const deleteButton = li.querySelector(".delete-button");
+        deleteButton.addEventListener("click", event => {
+            event.stopPropagation();
+            deletetodo(todo.id);
+        });
+
+        li.addEventListener("click", () => toggleTaskCompletion(todo.id));
         list.appendChild(li);
     });
 }
 
-function setfilter(filter) {
-    currentFilter = filter;
-    renderTasks();
+if (addBnt && input) {
+    addBnt.addEventListener("click", () => {
+        const text = input.value.trim();
+        if (text !== "") {
+            addtodo(text);
+            input.value = "";
+        }
+    });
 }
 
-function savetolockalstorage() {
-    localStorage.setItem("mytasks", JSON.stringify(todos));
+if (searchinput) {
+    searchinput.addEventListener("input", event => {
+        searchQuery = event.target.value.trim().toLowerCase();
+        render();
+    });
 }
 
-let todos = JSON.parse(localStorage.getItem("mytasks")) || [];
+filterBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+        currentfilter = btn.dataset.filter || "all";
+        render();
+    });
+});
 
+render();
